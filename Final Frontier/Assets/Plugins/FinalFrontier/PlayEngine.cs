@@ -9,16 +9,15 @@ public class PlayEngine : MonoBehaviour
 {
     private DeckViewer hv;
     private CardViewer cv;
-    private GameObject Hand;
-    private GameObject Review;
+    public GameObject Hand;
+    public GameObject Draw;
+    public GameObject Mission;
+    public GameObject Review;
     public Player Player;
 
     // Start is called before the first frame update
     void Start()
     {
-
-        Hand = GameObject.Find("DeckHandler");
-        Review = GameObject.Find("CardViewer");
         hv = Hand.GetComponent<DeckViewer>();
         cv = Review.GetComponent<CardViewer>();
     }
@@ -31,38 +30,25 @@ public class PlayEngine : MonoBehaviour
 
     public void Init()
     {
-
-        GameObject gohv = GameObject.Find("DeckHandler");
-        GameObject goHand = (GameObject)Instantiate(gohv);
-        GameObject mobject = (GameObject)Instantiate(gohv);
-        GameObject drwobject = (GameObject)Instantiate(gohv);
-        DeckViewer mv = mobject.GetComponent<DeckViewer>();
-        DeckViewer drwv = drwobject.GetComponent<DeckViewer>();
-        DeckViewer hv = goHand.GetComponent<DeckViewer>();
-        goHand.name = "Hand";
-        drwv.name = "DrawViewer";
-        mv.name = "MissionViewer";
+        DeckViewer mv = Mission.GetComponent<DeckViewer>();
+        DeckViewer drwv = Draw.GetComponent<DeckViewer>();
+        DeckViewer hv = Hand.GetComponent<DeckViewer>();
         Review = GameObject.Find("CardViewer");
         cv = Review.GetComponent<CardViewer>();
         Deck d = Player.Decks.GetDeck(DeckEnum.Draw);
         d.Shuffle();
-        //Deck hand = d.Draw(0, 7);
         Deck hand = new Deck();
         hand.DeckType = DeckEnum.PlayerHand;
+        hand.GUID = System.Guid.NewGuid().ToString();
         hv.AddDeck(hand);
         Player.Decks.AddDeck(hand);
 
         if (hand != null)
         {
             hv.Clear();
-            //hv.deck = hand;
-            hv.GUID = d.GUID;
-            //hv.start = new Vector3(-4.4f, -4.1f);
             hv.start = new Vector3(0f, 0f);
             hv.Scale = 0.25f;
             hv.cardXOffset = 1f;
-            //hv.ShowCards(0, hv.deck.Cards.Count);
-            //p.Decks.SetDeck(DeckEnum.PlayerHand, hand);
         }
 
         Deck m = Player.Decks.GetDeck(DeckEnum.Mission);

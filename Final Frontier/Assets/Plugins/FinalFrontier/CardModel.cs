@@ -27,7 +27,8 @@ public class CardModel : MonoBehaviour
     public GameObject cardObject;
     public int Index;
     public float speed = 1f;
-    private List<Collider2D> Collisions;
+    private List<Collider2D> CardCollisions;
+    private List<Collider2D> DeckCollisions;
     public bool Flipped;
 
 
@@ -49,7 +50,6 @@ public class CardModel : MonoBehaviour
             {
                 moveCard = false;
                 SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
-                sr.sortingLayerName = "Default";
             }
         }
     }
@@ -72,29 +72,38 @@ public class CardModel : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         CardModel cm = gameObject.GetComponent<CardModel>();
+        string GUID="";
         if (Global.DragID == null)
             return;
         if (cm == null)
             return;
         
         CardModel ccm = collision.GetComponent<CardModel>();
-        if (ccm == null)
-            return;
-        if (ccm.GUID != Global.DragID)
+        if (ccm != null)
         {
-            Collisions.Add(collision);
-            if (Collisions.Count > 0)
+            if (ccm.GUID != Global.DragID)
             {
-                for (int i = 0; i < Collisions.Count - 1; i++)
+                CardCollisions.Add(collision);
+                if (CardCollisions.Count > 0)
                 {
-                    SpriteRenderer sr = Collisions[i].GetComponent<SpriteRenderer>();
-                    sr.material.SetFloat("_OutlineEnabled", 0);
+                    for (int i = 0; i < CardCollisions.Count - 1; i++)
+                    {
+                        SpriteRenderer sr = CardCollisions[i].GetComponent<SpriteRenderer>();
+                        sr.material.SetFloat("_OutlineEnabled", 0);
+                    }
                 }
+                SpriteRenderer lsr = CardCollisions[CardCollisions.Count - 1].GetComponent<SpriteRenderer>();
+                lsr.material.SetFloat("_OutlineEnabled", 1);
             }
-            SpriteRenderer lsr = Collisions[Collisions.Count - 1].GetComponent<SpriteRenderer>();
-            lsr.material.SetFloat("_OutlineEnabled", 1);
+
         }
-      
+
+        DeckViewer dv = collision.GetComponent<DeckViewer>();
+        if (dv != null)
+        {
+            DeckCollisions.Add(collision);
+        }
+
     }
 
     private void OnTriggerExit2D(Collider2D collision)
@@ -104,10 +113,17 @@ public class CardModel : MonoBehaviour
         if (cm != null & cm.GUID == Global.DragID)
         {
             CardModel ccm = collision.GetComponent<CardModel>();
-            SpriteRenderer sr = collision.GetComponent<SpriteRenderer>();
-            sr.material.SetFloat("_OutlineEnabled", 0);
+            DeckViewer cdv = collision.GetComponent<DeckViewer>();
             if (ccm != null)
-                Collisions.Remove(collision);
+            {
+                SpriteRenderer sr = collision.GetComponent<SpriteRenderer>();
+                sr.material.SetFloat("_OutlineEnabled", 0);
+                CardCollisions.Remove(collision);
+            }
+            if (cdv != null)
+            {
+                DeckCollisions.Remove(collision);
+            }
         }
     }
 
@@ -118,20 +134,11 @@ public class CardModel : MonoBehaviour
 
         // Store offset = gameobject world pos - mouse world pos
         mOffset = gameObject.transform.position - GetMouseAsWorldPoint();
-        Collisions.Clear();
+        CardCollisions.Clear();
         SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
         CardModel cm = gameObject.GetComponent<CardModel>();
         switch (cm.DeckName)
         {
-            case "DrawViewer":
-                GameObject gohv = GameObject.Find("DeckHandler");
-                GameObject godv = GameObject.Find(cm.DeckName);
-                DeckViewer dhv = gohv.GetComponent<DeckViewer>();
-                DeckViewer hhv = gohv.GetComponent<DeckViewer>();
-                destPos = dhv.FreeSlot();
-                //hhv.deck.AddCard(dhv.deck.Draw(0));
-                //moveCard = true;
-                break;
             default:
                 sr.sortingLayerName = "Play";
                 Global.Drag = true;
@@ -140,7 +147,6 @@ public class CardModel : MonoBehaviour
                 moveCard = false;
                 Global.DragID = cm.GUID;
                 break;
-
         }
         
     }
@@ -167,11 +173,9 @@ public class CardModel : MonoBehaviour
             pos.y = Mathf.Clamp(pos.y, miny, maxy);
             cardObject.transform.position = pos;
             SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
-            //sr.material.SetFloat("_OutlineEnabled", 0);
             Global.Drag = true;
             Global.DragID = gameObject.GetComponent<CardModel>().GUID;
-            sr.sortingLayerName = "Play";
-            
+            sr.sortingLayerName = "Play";   
         }
     }
 
@@ -179,33 +183,55 @@ public class CardModel : MonoBehaviour
     {
         Global.Drag = false;
         SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
-        if (Collisions.Count > 0)
+        if (CardCollisions.Count > 0)
         {
-            sr.sortingLayerName = "Default";
-            CardModel cm = Collisions[Collisions.Count - 1].GetComponent<CardModel>();
-            SpriteRenderer csr = Collisions[Collisions.Count - 1].GetComponent<SpriteRenderer>();
-            sr.sortingOrder = csr.sortingOrder + 1;
-            sr.transform.position = csr.transform.position;
-            HandleCardCollision(Global.DragID, cm.GUID);
+            CardModel cm = CardCollisions[CardCollisions.Count - 1].GetComponent<CardModel>();
+            if (cm != null)
+                HandleCardCollision(CardCollisions.Count - 1);
+            
         }
-        else
+        if(DeckCollisions.Count > 0)
         {
-            //moveCard = true;
+            DeckViewer dv = DeckCollisions[DeckCollisions.Count - 1].GetComponent<DeckViewer>();
+            if (dv != null)
+                HandleDeckCollision(DeckCollisions.Count - 1);
         }
         Global.DragID = "";
-        //sr.material.SetFloat("_OutlineEnabled", 0);
+        sr.material.SetFloat("_OutlineEnabled", 0);
+        sr.sortingLayerName = "Default";
     }
 
-    private void HandleCardCollision(string objId, string colId)
+    private void HandleCardCollision(int Index)
     {
-        Card cardmoved = Board.GetCard(objId);
-        Card cardCollided = Board.GetCard(colId);
+        Collider2D cCard = CardCollisions[Index];
+        Card cardmoved = Board.GetCard(gameObject.GetComponent<CardModel>().GUID);
+        Card cardCollided = Board.GetCard(cCard.gameObject.GetComponent<CardModel>().GUID);
         string movedtype = CardBase.FieldValue(CardBase.CardCollection[cardmoved.CardIndex], "Type");
         string coltype = CardBase.FieldValue(CardBase.CardCollection[cardCollided.CardIndex], "Type");
         switch (movedtype)
         {
 
         }
+    }
+
+    private void HandleDeckCollision(int Index)
+    {
+        Collider2D cDeck = DeckCollisions[Index];
+        Card cardmoved = Board.GetCard(gameObject.GetComponent<CardModel>().GUID);
+        Deck deckCollided = Board.GetDeck(cDeck.gameObject.GetComponent<DeckViewer>().GUID);
+        string movedtype = CardBase.FieldValue(CardBase.CardCollection[cardmoved.CardIndex], "Type");
+        DeckViewer dvr = cDeck.gameObject.GetComponent<DeckViewer>();
+        switch (cDeck.gameObject.name)
+        {
+            case "Hand":
+                SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
+                SpriteRenderer dsr = cDeck.gameObject.GetComponent<SpriteRenderer>();
+                Vector3 offset = dvr.FreeSlot();
+                sr.transform.position = offset + dvr.transform.position;
+                break;
+
+        }
+
     }
 
     public void ToggleFace(bool showFace)
@@ -336,7 +362,8 @@ public class CardModel : MonoBehaviour
         fh = objfh.GetComponent<DownloadFileHandler>();
         spriteRenderer = cardObject.GetComponent<SpriteRenderer>();
         box = cardObject.GetComponent<BoxCollider2D>();
-        Collisions = new List<Collider2D>();
+        CardCollisions = new List<Collider2D>();
+        DeckCollisions = new List<Collider2D>();
         speed = 25f;
     }
 }

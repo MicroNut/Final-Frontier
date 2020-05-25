@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5951123520743524885}
   - component: {fileID: 5951123520743524880}
   - component: {fileID: 331853019857612928}
+  - component: {fileID: 8103775607462139328}
   m_Layer: 0
   m_Name: Card
   m_TagString: Untagged
@@ -46,14 +47,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3b9998aae5ba2f4192fcfc529d7b5e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  destPos: {x: 0, y: 0, z: 0}
+  moveCard: 0
   GUID: 
-  FileHandler: {fileID: 8775164285272513828, guid: 0f39aa279c0b0fa48bb89eaf9fe2fcd7,
-    type: 3}
-  cardBack: {fileID: 3796127048603394180, guid: ae7e74dce52c33148b44cb636f57fc27,
-    type: 3}
-  cardMissing: {fileID: 699046954788081226, guid: 38f71d1914f578c45a417481f73c682e,
-    type: 3}
+  DeckName: 
+  CanDrag: 0
   cardObject: {fileID: 5951123520743524890}
+  Index: 0
+  speed: 1
+  Flipped: 0
 --- !u!114 &5951123520743524885
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -101,6 +103,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   duration: 0.5
   cardScale: 1
+  cardIndex: 0
 --- !u!212 &5951123520743524880
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -148,7 +151,7 @@ SpriteRenderer:
   m_Size: {x: 3.57, y: 4.99}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!61 &331853019857612928
@@ -177,3 +180,24 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!50 &8103775607462139328
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5951123520743524890}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0

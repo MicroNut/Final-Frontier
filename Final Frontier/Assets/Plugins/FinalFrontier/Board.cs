@@ -97,4 +97,31 @@ public static class Board
         return null;
     }
 
+    public static Deck GetDeck(string GUID)
+    {
+        foreach(Player p in Players)
+        {
+            Deck d = GetDeckFromDeckList(p.Decks.Decks, GUID);
+            if (d != null)
+                return d;
+        }
+        return null;
+    }
+
+    private static Deck GetDeckFromDeckList(List<Deck> Decks, string GUID)
+    {
+        foreach(Deck d in Decks)
+        {
+            if (d.GUID == GUID)
+                return d;
+            foreach(Card c in d.Cards)
+            {
+                Deck deck = GetDeckFromDeckList(c.StackList.Decks, GUID);
+                if (deck != null && deck.GUID == GUID)
+                    return deck; 
+            }
+        }
+        return null;
+    }
+
 }

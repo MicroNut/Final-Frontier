@@ -20,6 +20,10 @@ public class DeckViewer : MonoBehaviour
         deck = new Deck();
     }
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        Debug.print("Collided!");
+    }
     private void OnMouseOver()
     {
         Debug.print("Hit!");
@@ -59,17 +63,6 @@ public class DeckViewer : MonoBehaviour
         }
     }
 
-    //public void Clear()
-    //{
-    //    if (ViewStack != null)
-    //    {
-    //        foreach (GameObject o in ViewStack)
-    //        {
-    //            Destroy(o);
-    //        }
-    //    }
-    //}
-
     public void Clear()
     {
         foreach(Transform child in gameObject.transform)
@@ -105,15 +98,10 @@ public class DeckViewer : MonoBehaviour
 
     public void AddDeck(Deck Deck)
     {
-        deck = new Deck();
-        //deck.Cards.Clear();
-        foreach(Card c in Deck.Cards)
-        {
-            //c.DeckViewer = gameObject.name;
-            deck.AddCard(c);
-        }
+        deck = Deck;
+        GUID = deck.GUID;
     }
-
+   
     public int DeckCount()
     {
         return deck.Cards.Count;
