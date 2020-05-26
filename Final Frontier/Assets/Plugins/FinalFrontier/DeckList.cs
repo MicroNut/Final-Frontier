@@ -31,6 +31,7 @@ public class DeckList
     {
         //this.Decks = new List<Deck>();
         Deck item = GetDeck(DeckEnum.Draw);
+        item.GUID = System.Guid.NewGuid().ToString();
         item.Cards.Clear();
         string deckType="";
         
@@ -52,6 +53,7 @@ public class DeckList
                         int qty = System.Int32.Parse(data[0]);
                         int cardIndex = CardBase.GetIndex(data[1]);
                         Card card = new Card();
+                        card.ParentGUID = item.GUID;
                         card.Active = true;
                         card.CardIndex = cardIndex;
                         card.Flipped = false;
@@ -77,6 +79,7 @@ public class DeckList
     {
         //this.Decks = new List<Deck>();
         Deck item = new Deck();
+        item.GUID = System.Guid.NewGuid().ToString();
         string deckType;
 
         System.IO.StreamReader sr = new System.IO.StreamReader(DeckFile);
@@ -88,6 +91,7 @@ public class DeckList
             deckType = CardBase.FieldValue(cardData[0], "Type");
             int cardIndex = CardBase.GetIndex(data[1]);
             Card card = new Card();
+            card.ParentGUID = item.GUID;
             card.Active = true;
             card.CardIndex = cardIndex;
             card.Flipped = false;

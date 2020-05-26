@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-public static class Board 
+public static class Board
 {
     public static int Rounds;
     public static List<Player> Players;
@@ -31,7 +31,7 @@ public static class Board
 
     public static void RemovePlayer(string Handle)
     {
-        foreach(Player p in Players)
+        foreach (Player p in Players)
         {
             if (p.Handle == Handle)
             {
@@ -42,7 +42,7 @@ public static class Board
 
     public static Player GetPlayer(string Handle)
     {
-        foreach(Player p in Players)
+        foreach (Player p in Players)
         {
             if (p.Handle == Handle)
             {
@@ -54,9 +54,9 @@ public static class Board
 
     public static Card GetCard(string GUID)
     {
-        foreach(Player p in Players)
+        foreach (Player p in Players)
         {
-            foreach(Deck d in p.Decks.Decks)
+            foreach (Deck d in p.Decks.Decks)
             {
                 foreach (Card c in d.Cards)
                 {
@@ -68,7 +68,7 @@ public static class Board
                     }
                     if (c.GUID == GUID)
                     {
-                       return c;
+                        return c;
                     }
                 }
             }
@@ -78,9 +78,9 @@ public static class Board
 
     private static Card GetCardFromDecks(List<Deck> Decks, string GUID)
     {
-        foreach(Deck d in Decks)
+        foreach (Deck d in Decks)
         {
-            foreach(Card c in d.Cards)
+            foreach (Card c in d.Cards)
             {
                 if (c.StackList.Decks.Count > 0)
                 {
@@ -99,7 +99,7 @@ public static class Board
 
     public static Deck GetDeck(string GUID)
     {
-        foreach(Player p in Players)
+        foreach (Player p in Players)
         {
             Deck d = GetDeckFromDeckList(p.Decks.Decks, GUID);
             if (d != null)
@@ -110,18 +110,32 @@ public static class Board
 
     private static Deck GetDeckFromDeckList(List<Deck> Decks, string GUID)
     {
-        foreach(Deck d in Decks)
+        foreach (Deck d in Decks)
         {
             if (d.GUID == GUID)
                 return d;
-            foreach(Card c in d.Cards)
+            foreach (Card c in d.Cards)
             {
                 Deck deck = GetDeckFromDeckList(c.StackList.Decks, GUID);
                 if (deck != null && deck.GUID == GUID)
-                    return deck; 
+                    return deck;
             }
         }
         return null;
     }
 
+    public static void SwapCard(Card card, string deckGUID)
+    {
+        Deck oDeck = GetDeck(card.ParentGUID);
+        Deck dDeck = GetDeck(deckGUID);
+        foreach(Card c in oDeck.Cards)
+        {
+            if (c.GUID == card.GUID)
+            {
+                oDeck.Cards.Remove(c);
+                break;
+            }
+        }
+        dDeck.AddCard(card);
+    }
 }

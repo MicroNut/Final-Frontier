@@ -9,6 +9,7 @@ public class Card
     public int CardIndex;
     public int PlayerIndex;
     public string GUID;
+    public string ParentGUID;
     public bool Active;
     public bool Flipped;
     public DeckList StackList;

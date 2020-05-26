@@ -36,16 +36,17 @@ public class PlayEngine : MonoBehaviour
         Review = GameObject.Find("CardViewer");
         cv = Review.GetComponent<CardViewer>();
         Deck d = Player.Decks.GetDeck(DeckEnum.Draw);
+        drwv.GUID = d.GUID;
         d.Shuffle();
         Deck hand = new Deck();
-        hand.DeckType = DeckEnum.PlayerHand;
-        hand.GUID = System.Guid.NewGuid().ToString();
-        hv.AddDeck(hand);
         Player.Decks.AddDeck(hand);
-
+        hand.DeckType = DeckEnum.PlayerHand;
+        //hv.AddDeck(hand);
+  
         if (hand != null)
         {
             hv.Clear();
+            hv.GUID = hand.GUID;
             hv.start = new Vector3(0f, 0f);
             hv.Scale = 0.25f;
             hv.cardXOffset = 1f;
@@ -55,8 +56,6 @@ public class PlayEngine : MonoBehaviour
         if (m != null)
         {
             mv.Clear();
-            mv.deck = new Deck();
-            mv.AddDeck(m);
             mv.GUID = m.GUID;
             mv.start = new Vector3(-1.65f, -0.025f);
             mv.Scale = 0.25f;
@@ -71,8 +70,6 @@ public class PlayEngine : MonoBehaviour
             {
                 c.Flipped = true;
             }
-            drwv.deck = new Deck();
-            drwv.AddDeck(d);
             drwv.start = new Vector3(-3.3f, -1.0f);
             drwv.Scale = 0.25f;
             drwv.cardXOffset = 0f;

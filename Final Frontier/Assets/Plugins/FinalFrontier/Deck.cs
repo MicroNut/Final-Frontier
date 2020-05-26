@@ -47,6 +47,7 @@ public class Deck
 
     public Deck()
     {
+        GUID = System.Guid.NewGuid().ToString();
         Cards = new List<Card>();
         Dirty = false;
     }
@@ -105,7 +106,7 @@ public class Deck
 
     public void AddCard(Card card, bool OnBottom = true)
     {
-        //card.Parent = this.GUID;
+        card.ParentGUID = this.GUID;
         if (OnBottom)
         {
             Cards.Add(card);

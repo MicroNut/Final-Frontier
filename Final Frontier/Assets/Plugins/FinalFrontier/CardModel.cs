@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Ookii.Dialogs;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -17,7 +18,6 @@ public class CardModel : MonoBehaviour
     private BoxCollider2D box;
     private Vector3 mOffset;
     private float mZCoord;
-    private GameObject collided;
 
     public Vector3 destPos;
     public bool moveCard;
@@ -29,7 +29,6 @@ public class CardModel : MonoBehaviour
     public float speed = 1f;
     private List<Collider2D> CardCollisions;
     private List<Collider2D> DeckCollisions;
-    public bool Flipped;
 
 
     public void Start()
@@ -142,7 +141,7 @@ public class CardModel : MonoBehaviour
             default:
                 sr.sortingLayerName = "Play";
                 Global.Drag = true;
-                collided = null;
+                //collided = null;
                 destPos = cardObject.transform.position;
                 moveCard = false;
                 Global.DragID = cm.GUID;
@@ -218,7 +217,7 @@ public class CardModel : MonoBehaviour
     {
         Collider2D cDeck = DeckCollisions[Index];
         Card cardmoved = Board.GetCard(gameObject.GetComponent<CardModel>().GUID);
-        Deck deckCollided = Board.GetDeck(cDeck.gameObject.GetComponent<DeckViewer>().GUID);
+        //Deck deckCollided = Board.GetDeck(cDeck.gameObject.GetComponent<DeckViewer>().GUID);
         string movedtype = CardBase.FieldValue(CardBase.CardCollection[cardmoved.CardIndex], "Type");
         DeckViewer dvr = cDeck.gameObject.GetComponent<DeckViewer>();
         switch (cDeck.gameObject.name)
@@ -227,7 +226,14 @@ public class CardModel : MonoBehaviour
                 SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
                 SpriteRenderer dsr = cDeck.gameObject.GetComponent<SpriteRenderer>();
                 Vector3 offset = dvr.FreeSlot();
-                sr.transform.position = offset + dvr.transform.position;
+                Bounds bounds = sr.bounds;
+                float midx = (float)(0.5 * (bounds.max.x - bounds.min.x));
+                float midy = (float)(0.5 * (bounds.max.y - bounds.min.y));
+
+                sr.transform.position = offset + new Vector3(midx,midy);
+                Board.SwapCard(cardmoved, cDeck.gameObject.GetComponent<DeckViewer>().GUID);
+                FlipFace(dvr.Scale);
+                
                 break;
 
         }
@@ -236,17 +242,40 @@ public class CardModel : MonoBehaviour
 
     public void ToggleFace(bool showFace)
     {
+        Card card = Board.GetCard(GUID);
         SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
         if (showFace)
         {
             string imagename = CardBase.FieldValue(CardBase.CardCollection[Index], "ImageFile");
             
             sr.sprite = LoadNewSprite(Global.ImageDir+ @"\" + imagename+ ".jpg") ;
-            Flipped = false;
+            card.Flipped = false;
         }
         else
         {
-            sr.sprite = LoadNewSprite(Global.ImageDir + @"\cardback.jpg");        }
+            sr.sprite = LoadNewSprite(Global.ImageDir + @"\cardback.jpg");
+            card.Flipped = true;
+        }
+    }
+
+    public void FlipFace(float Scale)
+    {
+        string imagename = CardBase.FieldValue(CardBase.CardCollection[Index], "ImageFile");
+        Sprite image = LoadNewSprite(Global.ImageDir + @"\" + imagename + ".jpg");
+        Sprite back = LoadNewSprite(Global.ImageDir + @"\cardback.jpg");
+        CardFlipper fp = gameObject.GetComponent<CardFlipper>();
+        fp.transform.localScale = gameObject.transform.localScale;
+        Card card = Board.GetCard(GUID);
+        if (card.Flipped)
+        {
+            fp.FlipCard(back,image, Scale);
+            card.Flipped = false;
+        }
+        else
+        {
+            fp.FlipCard(image, back, Scale);
+            card.Flipped = true;
+        }
     }
 
     public void SetSprite(int CardIndex)
@@ -319,6 +348,9 @@ public class CardModel : MonoBehaviour
         }
         else
         {
+            GameObject goFH = GameObject.Find("FileHandler");
+            DownloadFileHandler dfh = goFH.GetComponent<DownloadFileHandler>();
+            dfh.GetFileFromURL(Global.CardGeneralURLs, FilePath);
             string filePath = Global.ImageDir + @"\CardMissing.jpg";
             return LoadNewSprite(filePath);
         }

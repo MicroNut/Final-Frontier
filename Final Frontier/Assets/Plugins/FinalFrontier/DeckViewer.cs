@@ -5,7 +5,7 @@ using UnityEngine;
 public class DeckViewer : MonoBehaviour
 {
     public Vector3 start;
-    public Deck deck;
+    //public Deck deck;
     public float Scale;
     public float cardXOffset;
     public float cardYOffset;
@@ -17,7 +17,7 @@ public class DeckViewer : MonoBehaviour
     void Start()
     {
         //ViewStack = new List<GameObject>();
-        deck = new Deck();
+        //deck = new Deck();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -33,6 +33,7 @@ public class DeckViewer : MonoBehaviour
         float cox = 0;
         float coy = 0;
         Clear();
+        Deck deck = Board.GetDeck(GUID);
         for (int i = startIndex; i < startIndex + numberOfCards; i++)
         {
             cox += cardXOffset;
@@ -79,11 +80,12 @@ public class DeckViewer : MonoBehaviour
 
     public Vector3 FreeSlot()
     {
+        Deck deck = Board.GetDeck(GUID);
+        Bounds bounds = gameObject.GetComponent<SpriteRenderer>().bounds;
         Vector3 offset = new Vector3(cardXOffset * deck.Cards.Count, cardYOffset * deck.Cards.Count);
-        return start + offset;
+        Vector3 startPos = new Vector3(bounds.min.x, bounds.min.y);
+        return startPos + offset;
     }
-
-    
 
     private GameObject Draw()
     {
@@ -96,15 +98,18 @@ public class DeckViewer : MonoBehaviour
         return obj;
     }
 
-    public void AddDeck(Deck Deck)
-    {
-        deck = Deck;
-        GUID = deck.GUID;
-    }
+    //public void AddDeck(Deck Deck)
+    //{
+    //    deck = Deck;
+    //    GUID = deck.GUID;
+    //}
    
     public int DeckCount()
     {
-        return deck.Cards.Count;
+        Deck d = Board.GetDeck(GUID);
+        if (d != null)
+            return d.Cards.Count;
+        return 0;
     }
 
 }

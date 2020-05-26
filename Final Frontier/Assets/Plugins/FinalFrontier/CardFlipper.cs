@@ -8,7 +8,7 @@ public class CardFlipper : MonoBehaviour
 
     public AnimationCurve scaleCurve;
     public float duration = 0.5f;
-    public float cardScale = 1f;
+    //public float cardScale = 1f;
     public int cardIndex;
 
     private void Awake()
@@ -17,15 +17,16 @@ public class CardFlipper : MonoBehaviour
         spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
     }
 
-    public void FlipCard(Sprite startImage, Sprite endImage)
+    public void FlipCard(Sprite startImage, Sprite endImage, float cScale)
     {
-        StopCoroutine(Flip(startImage, endImage));
-        StartCoroutine(Flip(startImage, endImage));
+        StopCoroutine(Flip(startImage, endImage, cScale));
+        StartCoroutine(Flip(startImage, endImage, cScale));
     }
 
-    public IEnumerator Flip(Sprite startImage, Sprite endImage)
+    public IEnumerator Flip(Sprite startImage, Sprite endImage, float cscale)
     {
         spriteRenderer.sprite = startImage;
+        float cardScale = 1/cscale;
 
         float time = 0f;
         while (time < 1f)
