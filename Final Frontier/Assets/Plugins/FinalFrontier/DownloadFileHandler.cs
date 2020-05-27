@@ -11,24 +11,34 @@ public class DownloadFileHandler : MonoBehaviour
     private string url;
     private Stream stream;
     private bool success;
+    private string error;
 
     IEnumerator DownloadFile(string URL, string FilePath)
     {
         var uwr = new UnityWebRequest(URL, UnityWebRequest.kHttpVerbGET);
         uwr.downloadHandler = new DownloadHandlerFile(Path.Combine(Global.Root, FilePath));
         yield return uwr.SendWebRequest();
+        
         if (uwr.isNetworkError || uwr.isHttpError)
+        {
             Debug.print(uwr.error);
+            success = false;
+            error = uwr.error;
+        }
         else
+        {
             Debug.print("File successfully downloaded and saved to " + Path.Combine(Global.Root, FilePath));
+            success = true;
+        }
     }
 
-    public void GetFileFromURL(string URL, string FilePath)
+    public bool GetFileFromURL(string URL, string FilePath)
     {
         StartCoroutine(DownloadFile(URL, FilePath));
+        return success;
     }
 
-    public void SaveFile(string URL, string FileName)
+    public bool SaveFile(string URL, string FileName)
     {
 
         if (File.Exists(FileName))
@@ -41,6 +51,6 @@ public class DownloadFileHandler : MonoBehaviour
             Directory.CreateDirectory(dir);
         }
         string name = Path.GetFileNameWithoutExtension(FileName);
-        GetFileFromURL(URL, FileName);
+        return GetFileFromURL(URL, FileName);
     }
 }

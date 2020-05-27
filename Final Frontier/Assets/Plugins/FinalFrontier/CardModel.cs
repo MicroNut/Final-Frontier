@@ -71,7 +71,6 @@ public class CardModel : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         CardModel cm = gameObject.GetComponent<CardModel>();
-        string GUID="";
         if (Global.DragID == null)
             return;
         if (cm == null)
@@ -207,10 +206,10 @@ public class CardModel : MonoBehaviour
         Card cardCollided = Board.GetCard(cCard.gameObject.GetComponent<CardModel>().GUID);
         string movedtype = CardBase.FieldValue(CardBase.CardCollection[cardmoved.CardIndex], "Type");
         string coltype = CardBase.FieldValue(CardBase.CardCollection[cardCollided.CardIndex], "Type");
-        switch (movedtype)
-        {
+        //switch (movedtype)
+        //{
 
-        }
+        //}
     }
 
     private void HandleDeckCollision(int Index)
@@ -298,22 +297,23 @@ public class CardModel : MonoBehaviour
         string ImageURL = Global.CardGeneralURLs + ImageFile + ".jpg";
         if (!File.Exists(filePath))
         {
-            fh.SaveFile(ImageURL, filePath);
-            FileStream fs;
-            bool unlock = false;
-            while (!unlock)
-            {
-                try
-                {
-                    fs = File.Open(filePath, FileMode.Open);
-                    unlock = true;
-                    fs.Close();
-                }
-                catch (IOException ex)
-                {
-                    unlock = true;
-                }
-            }
+            LoadFromURL(ImageURL, filePath);
+        //    fh.GetFileFromURL(ImageURL, filePath);
+        //    FileStream fs;
+        //    bool unlock = false;
+        //    while (!unlock)
+        //    {
+        //        try
+        //        {
+        //            fs = File.Open(filePath, FileMode.Open);
+        //            unlock = true;
+        //            fs.Close();
+        //        }
+        //        catch (IOException ex)
+        //        {
+        //            unlock = true;
+        //        }
+        //    }
         }
         spriteRenderer.sprite = LoadNewSprite(filePath);
         box.size = new Vector3(spriteRenderer.sprite.bounds.size.x / transform.lossyScale.x,
@@ -322,6 +322,33 @@ public class CardModel : MonoBehaviour
         box.offset = new Vector2(0, 0);
     }
 
+    private bool LoadFromURL(string URL, string Path)
+    {
+        GameObject goFH = GameObject.Find("FileHandler");
+        DownloadFileHandler dfh = goFH.GetComponent<DownloadFileHandler>();
+        if (dfh.GetFileFromURL(URL, Path))
+        {
+            FileStream fs;
+            bool unlock = false;
+            while (!unlock)
+            {
+                try
+                {
+                    fs = File.Open(Path, FileMode.Open);
+                    unlock = true;
+                    fs.Close();
+                }
+                catch (IOException ex)
+                {
+                    Debug.print(ex.Message);
+                    unlock = true;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+    
     public Sprite LoadNewSprite(string FilePath, float PixelsPerUnit = 100.0f, SpriteMeshType spriteType = SpriteMeshType.Tight)
     {
         FileStream fs;
@@ -340,6 +367,7 @@ public class CardModel : MonoBehaviour
                 catch (IOException ex)
                 {
                     unlock = false;
+                    Debug.print(ex.Message);
                 }
             }
             Texture2D SpriteTexture = LoadTexture(FilePath);
@@ -348,11 +376,14 @@ public class CardModel : MonoBehaviour
         }
         else
         {
-            GameObject goFH = GameObject.Find("FileHandler");
-            DownloadFileHandler dfh = goFH.GetComponent<DownloadFileHandler>();
-            dfh.GetFileFromURL(Global.CardGeneralURLs, FilePath);
-            string filePath = Global.ImageDir + @"\CardMissing.jpg";
-            return LoadNewSprite(filePath);
+            //GameObject goFH = GameObject.Find("FileHandler");
+            //DownloadFileHandler dfh = goFH.GetComponent<DownloadFileHandler>();
+            //dfh.GetFileFromURL(Global.CardGeneralURLs, FilePath);
+            //string filePath = Global.ImageDir + @"\CardMissing.jpg";
+            string cardURL = Global.CardGeneralURLs + Path.GetFileName(FilePath);
+            if (!LoadFromURL(cardURL, FilePath))
+                FilePath = Global.ImageDir + @"\CardMissing.jpg";
+            return LoadNewSprite(FilePath);
         }
     }
 
