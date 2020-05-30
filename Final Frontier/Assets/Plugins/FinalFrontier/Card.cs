@@ -11,7 +11,6 @@ public class Card
     public string GUID;
     public string ParentGUID;
     public bool Active;
-    public bool Flipped;
     public DeckList StackList;
 
     // Start is called before the first frame update

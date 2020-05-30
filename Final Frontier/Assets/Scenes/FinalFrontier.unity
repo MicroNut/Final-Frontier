@@ -177,7 +177,6 @@ GameObject:
   m_Component:
   - component: {fileID: 519420032}
   - component: {fileID: 519420031}
-  - component: {fileID: 519420029}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -185,14 +184,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &519420029
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 519420028}
-  m_Enabled: 1
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -486,7 +477,6 @@ GameObject:
   - component: {fileID: 1449799159}
   - component: {fileID: 1449799158}
   - component: {fileID: 1449799157}
-  - component: {fileID: 1449799156}
   m_Layer: 0
   m_Name: Hand
   m_TagString: Untagged
@@ -494,33 +484,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!61 &1449799156
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 4180230825642853146, guid: 018ebe556a395584bb0fadf418ef10e7,
-    type: 3}
-  m_PrefabInstance: {fileID: 1110390903829341177}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1449799155}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 3.57, y: 4.99}
-    newSize: {x: 3.57, y: 4.99}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 3.57, y: 4.99}
-  m_EdgeRadius: 0
 --- !u!114 &1449799157
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -600,8 +563,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1449799155}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.468, y: -4.072, z: 0}
-  m_LocalScale: {x: 3.6422977, y: 0.3473538, z: 1}
+  m_LocalPosition: {x: 2.468, y: -4.07, z: 0}
+  m_LocalScale: {x: 3.6422977, y: 0.23008715, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 6
@@ -797,6 +760,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Hand
       objectReference: {fileID: 0}
+    - target: {fileID: 5439591882649770336, guid: 018ebe556a395584bb0fadf418ef10e7,
+        type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7433172248437732932, guid: 018ebe556a395584bb0fadf418ef10e7,
         type: 3}
       propertyPath: card
@@ -810,7 +778,7 @@ PrefabInstance:
     - target: {fileID: 7669556328781645408, guid: 018ebe556a395584bb0fadf418ef10e7,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4.072
+      value: -4.07
       objectReference: {fileID: 0}
     - target: {fileID: 7669556328781645408, guid: 018ebe556a395584bb0fadf418ef10e7,
         type: 3}
@@ -865,10 +833,11 @@ PrefabInstance:
     - target: {fileID: 7669556328781645408, guid: 018ebe556a395584bb0fadf418ef10e7,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.3473538
+      value: 0.23008715
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 819725532159275387, guid: 018ebe556a395584bb0fadf418ef10e7, type: 3}
+    - {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 018ebe556a395584bb0fadf418ef10e7, type: 3}
 --- !u!1001 &4465605201202099667
 PrefabInstance:

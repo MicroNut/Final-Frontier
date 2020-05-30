@@ -5,30 +5,27 @@ using UnityEngine;
 public class DeckViewer : MonoBehaviour
 {
     public Vector3 start;
-    //public Deck deck;
     public float Scale;
     public float cardXOffset;
     public float cardYOffset;
-    //List<GameObject> ViewStack;
     public GameObject card;
     public string GUID;
 
     // Start is called before the first frame update
     void Start()
     {
-        //ViewStack = new List<GameObject>();
-        //deck = new Deck();
+
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.print("Collided!");
+        //Debug.print("Collided!");
     }
     private void OnMouseOver()
     {
-        Debug.print("Hit!");
+        //Debug.print("Hit!");
     }
-    public void ShowCards(int startIndex, int numberOfCards, bool CanDrag = true )
+    public void ShowCards(int startIndex, int numberOfCards, bool CanDrag = true, bool Flip = false )
     {
         float cox = 0;
         float coy = 0;
@@ -47,13 +44,15 @@ public class DeckViewer : MonoBehaviour
                 cm.DeckName = gameObject.name;
                 
                 cm.Index = deck.Cards[i].CardIndex;
-                if (deck.Cards[i].Flipped)
+                cm.Flipped = Flip;
+                if (cm.Flipped)
                     cm.SetSprite(-1);
                 else
                     cm.SetSprite(cm.Index);
                 cm.CanDrag = CanDrag;
                 Vector3 temp = start + new Vector3(cox, coy);
                 cardItem.transform.position = temp;
+                cardItem.layer = 8;
                 spriteRenderer.sortingOrder = i;
                 spriteRenderer.sortingLayerName = "Default";
                 spriteRenderer.material.SetFloat("_OutlineEnabled", 0);

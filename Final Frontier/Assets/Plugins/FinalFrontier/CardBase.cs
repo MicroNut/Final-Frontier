@@ -21,7 +21,7 @@ public class CardBase : MonoBehaviour
             catch(IOException ex)
             {
                 unlock = false;
-                Debug.print(ex.Message);
+                Debug.Log(ex.Message);
             }
         }
         

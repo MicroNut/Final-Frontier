@@ -21,23 +21,38 @@ public class DownloadFileHandler : MonoBehaviour
         
         if (uwr.isNetworkError || uwr.isHttpError)
         {
-            Debug.print(uwr.error);
             success = false;
             error = uwr.error;
         }
         else
         {
-            Debug.print("File successfully downloaded and saved to " + Path.Combine(Global.Root, FilePath));
-            success = true;
+            Debug.Log("File successfully downloaded and saved to " + Path.Combine(Global.Root, FilePath));
         }
     }
 
     public bool GetFileFromURL(string URL, string FilePath)
     {
-        StartCoroutine(DownloadFile(URL, FilePath));
-        return success;
+        error = "";
+        if (!File.Exists(FilePath))
+        {
+
+            StartCoroutine(DownloadFile(URL, FilePath));
+            return success;
+        }
+        else
+        {
+            return true;
+        }
     }
 
+    public bool GetFileFromURL(int CardIndex)
+    {
+        string image = CardBase.FieldValue(CardBase.CardCollection[CardIndex], "ImageFile");
+        string url = Global.CardGeneralURLs + @"/" + image + ".jpg";
+        string path = Global.ImageDir + @"\" + image + ".jpg";
+        return GetFileFromURL(url, path);
+    }
+    
     public bool SaveFile(string URL, string FileName)
     {
 

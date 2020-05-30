@@ -4,20 +4,28 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR;
 
 public class CardModel : MonoBehaviour
 {
-    private SpriteRenderer spriteRenderer;
+    //private SpriteRenderer spriteRenderer;
 
-    private DownloadFileHandler fh;
-    private GameObject objcv;
-    private GameObject objfh;
-    private BoxCollider2D box;
-    private Vector3 mOffset;
+    private DownloadFileHandler _fh;
+    private GameObject _gocv;
+    private GameObject _gofh;
+    private GameObject _goHand;
+    private BoxCollider2D _box;
+    private DeckViewer _handViewer;
+    private Vector3 _mOffset;
     private float mZCoord;
+    private List<Collider2D> _cardCollisions;
+    private CardModel _cardModel;
+    private SpriteRenderer _cardRender;
+    private Bounds _handBounds;
+    private Rect _playArea;
 
     public Vector3 destPos;
     public bool moveCard;
@@ -27,8 +35,25 @@ public class CardModel : MonoBehaviour
     public GameObject cardObject;
     public int Index;
     public float speed = 1f;
-    private List<Collider2D> CardCollisions;
-    private List<Collider2D> DeckCollisions;
+    public bool Flipped;
+   
+
+    public void Awake()
+    {
+        float minx = -3.65f, maxx = 8.2f, miny = -4.1f, maxy = 4f;
+        _gofh = GameObject.Find("FileHandler");
+        _gocv = GameObject.Find("CardViewer");
+        _fh = _gofh.GetComponent<DownloadFileHandler>();
+        _cardRender = gameObject.GetComponent<SpriteRenderer>();
+        _cardModel = gameObject.GetComponent<CardModel>();
+        _goHand = GameObject.Find("Hand");
+        _handBounds = _goHand.GetComponent<SpriteRenderer>().bounds;
+        _handViewer = _goHand.GetComponent<DeckViewer>();
+        _box = cardObject.GetComponent<BoxCollider2D>();
+        _cardCollisions = new List<Collider2D>();
+        _playArea = new Rect(minx, miny, maxx - minx, maxy - miny);
+        speed = 25f;
+    }
 
 
     public void Start()
@@ -38,6 +63,7 @@ public class CardModel : MonoBehaviour
 
     public void Update()
     {
+        
         if (moveCard)
         {
             float step = speed * Time.deltaTime; // calculate distance to move
@@ -52,28 +78,25 @@ public class CardModel : MonoBehaviour
             }
         }
     }
-    public void OnMouseOver()
+
+
+    public void OnMouseEnter()
     {
-        if (!Global.Drag )
+        if (_playArea.Contains(GetMouseAsWorldPoint()))
         {
-            Card card = Board.GetCard(GUID);
-            if (!card.Flipped)
+            if (!Global.Drag)
             {
-                objcv = GameObject.Find("CardViewer");
-                CardViewer cv = objcv.GetComponent<CardViewer>();
-                CardModel cm = objcv.GetComponent<CardModel>();
-                cv.card = card;
-                cv.ShowCard();
+                if (!Flipped)
+                {
+                    _gocv.GetComponent<CardViewer>().ShowCard(Index);
+                }
             }
         }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        CardModel cm = gameObject.GetComponent<CardModel>();
         if (Global.DragID == null)
-            return;
-        if (cm == null)
             return;
         
         CardModel ccm = collision.GetComponent<CardModel>();
@@ -81,34 +104,26 @@ public class CardModel : MonoBehaviour
         {
             if (ccm.GUID != Global.DragID)
             {
-                CardCollisions.Add(collision);
-                if (CardCollisions.Count > 0)
+                _cardCollisions.Add(collision);
+                if (_cardCollisions.Count > 0)
                 {
-                    for (int i = 0; i < CardCollisions.Count - 1; i++)
+                    for (int i = 0; i < _cardCollisions.Count - 1; i++)
                     {
-                        SpriteRenderer sr = CardCollisions[i].GetComponent<SpriteRenderer>();
+                        SpriteRenderer sr = _cardCollisions[i].GetComponent<SpriteRenderer>();
                         sr.material.SetFloat("_OutlineEnabled", 0);
                     }
                 }
-                SpriteRenderer lsr = CardCollisions[CardCollisions.Count - 1].GetComponent<SpriteRenderer>();
+                SpriteRenderer lsr = _cardCollisions[_cardCollisions.Count - 1].GetComponent<SpriteRenderer>();
                 lsr.material.SetFloat("_OutlineEnabled", 1);
             }
 
         }
-
-        DeckViewer dv = collision.GetComponent<DeckViewer>();
-        if (dv != null)
-        {
-            DeckCollisions.Add(collision);
-        }
-
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        CardModel cm = gameObject.GetComponent<CardModel>();
 
-        if (cm != null & cm.GUID == Global.DragID)
+        if (_cardModel.GUID == Global.DragID)
         {
             CardModel ccm = collision.GetComponent<CardModel>();
             DeckViewer cdv = collision.GetComponent<DeckViewer>();
@@ -116,37 +131,32 @@ public class CardModel : MonoBehaviour
             {
                 SpriteRenderer sr = collision.GetComponent<SpriteRenderer>();
                 sr.material.SetFloat("_OutlineEnabled", 0);
-                CardCollisions.Remove(collision);
-            }
-            if (cdv != null)
-            {
-                DeckCollisions.Remove(collision);
+                _cardCollisions.Remove(collision);
             }
         }
     }
 
     void OnMouseDown()
     {
+
         mZCoord = Camera.main.WorldToScreenPoint(
             gameObject.transform.position).z;
 
         // Store offset = gameobject world pos - mouse world pos
-        mOffset = gameObject.transform.position - GetMouseAsWorldPoint();
-        CardCollisions.Clear();
-        SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
+        _mOffset = gameObject.transform.position - GetMouseAsWorldPoint();
+        _cardCollisions.Clear();
         CardModel cm = gameObject.GetComponent<CardModel>();
         switch (cm.DeckName)
         {
             default:
-                sr.sortingLayerName = "Play";
+                _cardRender.sortingLayerName = "Play";
                 Global.Drag = true;
-                //collided = null;
                 destPos = cardObject.transform.position;
                 moveCard = false;
                 Global.DragID = cm.GUID;
                 break;
         }
-        
+
     }
 
     private Vector3 GetMouseAsWorldPoint()
@@ -165,80 +175,58 @@ public class CardModel : MonoBehaviour
     {
         if (CanDrag)
         {
-            float minx = -3.65f, maxx=8.2f, miny=-4.1f, maxy=4f;
-            Vector3 pos = GetMouseAsWorldPoint() + mOffset;
-            pos.x = Mathf.Clamp(pos.x, minx, maxx);
-            pos.y = Mathf.Clamp(pos.y, miny, maxy);
+            Vector3 pos = GetMouseAsWorldPoint() + _mOffset;
+            pos.x = math.clamp(pos.x, _playArea.xMin, _playArea.xMax);
+            pos.y = math.clamp(pos.y, _playArea.yMin, _playArea.yMax);
             cardObject.transform.position = pos;
-            SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
             Global.Drag = true;
-            Global.DragID = gameObject.GetComponent<CardModel>().GUID;
-            sr.sortingLayerName = "Play";   
+            Global.DragID = _cardModel.GUID;
+            _cardRender.sortingLayerName = "Play";   
         }
     }
 
     private void OnMouseUp()
     {
         Global.Drag = false;
-        SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
-        if (CardCollisions.Count > 0)
+        if (_handBounds.Contains(GetMouseAsWorldPoint()))
         {
-            CardModel cm = CardCollisions[CardCollisions.Count - 1].GetComponent<CardModel>();
-            if (cm != null)
-                HandleCardCollision(CardCollisions.Count - 1);
-            
+            switch(DeckName)
+            {
+                case "Draw":
+                    Card cardmoved = Board.GetCard(_cardModel.GUID);
+                    Vector3 offset = _handViewer.FreeSlot();
+                    Bounds bounds = _cardRender.bounds;
+                    float midx = (float)(0.5 * (bounds.max.x - bounds.min.x));
+                    float midy = (float)(0.5 * (bounds.max.y - bounds.min.y));
+
+                    _cardRender.transform.position = offset + new Vector3(midx, midy);
+                    Board.SwapCard(cardmoved, _goHand.GetComponent<DeckViewer>().GUID);
+                    FlipFace(_handViewer.Scale);
+                    break;
+            }
         }
-        if(DeckCollisions.Count > 0)
-        {
-            DeckViewer dv = DeckCollisions[DeckCollisions.Count - 1].GetComponent<DeckViewer>();
-            if (dv != null)
-                HandleDeckCollision(DeckCollisions.Count - 1);
+        else
+        { 
+
+            if (_cardCollisions.Count > 0)
+            {
+                CardModel cm = _cardCollisions[_cardCollisions.Count - 1].GetComponent<CardModel>();
+                if (cm != null)
+                    HandleCardCollision(_cardCollisions.Count - 1);
+
+            }
+            Global.DragID = "";
+            _cardRender.material.SetFloat("_OutlineEnabled", 0);
+            _cardRender.sortingLayerName = "Default";
         }
-        Global.DragID = "";
-        sr.material.SetFloat("_OutlineEnabled", 0);
-        sr.sortingLayerName = "Default";
     }
 
     private void HandleCardCollision(int Index)
     {
-        Collider2D cCard = CardCollisions[Index];
-        Card cardmoved = Board.GetCard(gameObject.GetComponent<CardModel>().GUID);
-        Card cardCollided = Board.GetCard(cCard.gameObject.GetComponent<CardModel>().GUID);
-        string movedtype = CardBase.FieldValue(CardBase.CardCollection[cardmoved.CardIndex], "Type");
-        string coltype = CardBase.FieldValue(CardBase.CardCollection[cardCollided.CardIndex], "Type");
-        //switch (movedtype)
-        //{
-
-        //}
-    }
-
-    private void HandleDeckCollision(int Index)
-    {
-        Collider2D cDeck = DeckCollisions[Index];
-        Card cardmoved = Board.GetCard(gameObject.GetComponent<CardModel>().GUID);
-        //Deck deckCollided = Board.GetDeck(cDeck.gameObject.GetComponent<DeckViewer>().GUID);
-        string movedtype = CardBase.FieldValue(CardBase.CardCollection[cardmoved.CardIndex], "Type");
-        DeckViewer dvr = cDeck.gameObject.GetComponent<DeckViewer>();
-        switch (cDeck.gameObject.name)
-        {
-            case "Hand":
-                SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
-                SpriteRenderer dsr = cDeck.gameObject.GetComponent<SpriteRenderer>();
-                Vector3 offset = dvr.FreeSlot();
-                Bounds bounds = sr.bounds;
-                float midx = (float)(0.5 * (bounds.max.x - bounds.min.x));
-                float midy = (float)(0.5 * (bounds.max.y - bounds.min.y));
-
-                sr.transform.position = offset + new Vector3(midx,midy);
-                Board.SwapCard(cardmoved, cDeck.gameObject.GetComponent<DeckViewer>().GUID);
-                FlipFace(dvr.Scale);
-                
-                break;
-
-        }
 
     }
 
+   
     public void ToggleFace(bool showFace)
     {
         Card card = Board.GetCard(GUID);
@@ -248,12 +236,12 @@ public class CardModel : MonoBehaviour
             string imagename = CardBase.FieldValue(CardBase.CardCollection[Index], "ImageFile");
             
             sr.sprite = LoadNewSprite(Global.ImageDir+ @"\" + imagename+ ".jpg") ;
-            card.Flipped = false;
+            Flipped = false;
         }
         else
         {
             sr.sprite = LoadNewSprite(Global.ImageDir + @"\cardback.jpg");
-            card.Flipped = true;
+            Flipped = true;
         }
     }
 
@@ -264,26 +252,21 @@ public class CardModel : MonoBehaviour
         Sprite back = LoadNewSprite(Global.ImageDir + @"\cardback.jpg");
         CardFlipper fp = gameObject.GetComponent<CardFlipper>();
         fp.transform.localScale = gameObject.transform.localScale;
-        Card card = Board.GetCard(GUID);
-        if (card.Flipped)
+        if (Flipped)
         {
-            fp.FlipCard(back,image, Scale);
-            card.Flipped = false;
+            fp.FlipCard(back, image, Scale);
+            Flipped = false;
         }
         else
         {
             fp.FlipCard(image, back, Scale);
-            card.Flipped = true;
+            Flipped = true;
         }
     }
 
     public void SetSprite(int CardIndex)
     {
         string ImageFile;
-        objfh = GameObject.Find("FileHandler");
-        spriteRenderer = cardObject.GetComponent<SpriteRenderer>();
-        box = cardObject.GetComponent<BoxCollider2D>();
-        fh = objfh.GetComponent<DownloadFileHandler>();
         if (CardIndex == -1)
         {
             ImageFile = "cardback";
@@ -298,32 +281,18 @@ public class CardModel : MonoBehaviour
         if (!File.Exists(filePath))
         {
             LoadFromURL(ImageURL, filePath);
-        //    fh.GetFileFromURL(ImageURL, filePath);
-        //    FileStream fs;
-        //    bool unlock = false;
-        //    while (!unlock)
-        //    {
-        //        try
-        //        {
-        //            fs = File.Open(filePath, FileMode.Open);
-        //            unlock = true;
-        //            fs.Close();
-        //        }
-        //        catch (IOException ex)
-        //        {
-        //            unlock = true;
-        //        }
-        //    }
         }
-        spriteRenderer.sprite = LoadNewSprite(filePath);
-        box.size = new Vector3(spriteRenderer.sprite.bounds.size.x / transform.lossyScale.x,
-                                     spriteRenderer.sprite.bounds.size.y / transform.lossyScale.y,
-                                     spriteRenderer.sprite.bounds.size.z / transform.lossyScale.z); ;
-        box.offset = new Vector2(0, 0);
+        _cardRender.sprite = LoadNewSprite(filePath);
+        _box.size = new Vector3(_cardRender.sprite.bounds.size.x / transform.lossyScale.x,
+                                     _cardRender.sprite.bounds.size.y / transform.lossyScale.y,
+                                     _cardRender.sprite.bounds.size.z / transform.lossyScale.z); ;
+        _box.offset = new Vector2(0, 0);
     }
 
     private bool LoadFromURL(string URL, string Path)
     {
+        if (File.Exists(Path))
+            return true;
         GameObject goFH = GameObject.Find("FileHandler");
         DownloadFileHandler dfh = goFH.GetComponent<DownloadFileHandler>();
         if (dfh.GetFileFromURL(URL, Path))
@@ -340,7 +309,7 @@ public class CardModel : MonoBehaviour
                 }
                 catch (IOException ex)
                 {
-                    Debug.print(ex.Message);
+                    Debug.Log(ex.Message);
                     unlock = true;
                 }
             }
@@ -367,7 +336,7 @@ public class CardModel : MonoBehaviour
                 catch (IOException ex)
                 {
                     unlock = false;
-                    Debug.print(ex.Message);
+                    Debug.Log(ex.Message);
                 }
             }
             Texture2D SpriteTexture = LoadTexture(FilePath);
@@ -376,10 +345,6 @@ public class CardModel : MonoBehaviour
         }
         else
         {
-            //GameObject goFH = GameObject.Find("FileHandler");
-            //DownloadFileHandler dfh = goFH.GetComponent<DownloadFileHandler>();
-            //dfh.GetFileFromURL(Global.CardGeneralURLs, FilePath);
-            //string filePath = Global.ImageDir + @"\CardMissing.jpg";
             string cardURL = Global.CardGeneralURLs + Path.GetFileName(FilePath);
             if (!LoadFromURL(cardURL, FilePath))
                 FilePath = Global.ImageDir + @"\CardMissing.jpg";
@@ -408,25 +373,11 @@ public class CardModel : MonoBehaviour
         if (File.Exists(FilePath))
         {
             FileData = File.ReadAllBytes(FilePath);
-            Tex2D = new Texture2D(2, 2);           // Create new "empty" texture
-            if (Tex2D.LoadImage(FileData))           // Load the imagedata into the texture (size is set automatically)
-                return Tex2D;                 // If data = readable -> return texture
+            Tex2D = new Texture2D(2, 2);                // Create new "empty" texture
+            if (Tex2D.LoadImage(FileData))              // Load the imagedata into the texture (size is set automatically)
+                return Tex2D;                           // If data = readable -> return texture
         }
-        return null;                     // Return null if load failed
+        return null;                                    // Return null if load failed
     }
 
-
-
-    public void Awake()
-    {
-        //spriteRenderer = GetComponent<SpriteRenderer>();
-        objfh = GameObject.Find("FileHandler");
-        objcv = GameObject.Find("CardViewer");
-        fh = objfh.GetComponent<DownloadFileHandler>();
-        spriteRenderer = cardObject.GetComponent<SpriteRenderer>();
-        box = cardObject.GetComponent<BoxCollider2D>();
-        CardCollisions = new List<Collider2D>();
-        DeckCollisions = new List<Collider2D>();
-        speed = 25f;
-    }
 }

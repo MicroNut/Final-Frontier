@@ -66,14 +66,10 @@ public class PlayEngine : MonoBehaviour
         if (d != null)
         {
             drwv.Clear();
-            foreach (Card c in d.Cards)
-            {
-                c.Flipped = true;
-            }
             drwv.start = new Vector3(-3.3f, -1.0f);
             drwv.Scale = 0.25f;
             drwv.cardXOffset = 0f;
-            drwv.ShowCards(0, drwv.DeckCount());
+            drwv.ShowCards(0, drwv.DeckCount(), true, true);
 
         }
 

@@ -8,7 +8,7 @@ using System.ComponentModel.Design.Serialization;
 using UnityEngine.Assertions.Comparers;
 using UnityEditor;
 
-public class Debug : MonoBehaviour
+public class Test : MonoBehaviour
 {
     GetFiles files;
     DeckViewer hv;
@@ -22,6 +22,7 @@ public class Debug : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Debug.Log("Start Game");
         Players = new List<string>();
         Players.Add("Player One");
         Board.LoadBoard(Players);

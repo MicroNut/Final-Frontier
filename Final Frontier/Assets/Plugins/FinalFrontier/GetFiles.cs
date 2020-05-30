@@ -44,7 +44,7 @@ public class GetFiles : MonoBehaviour
                 catch (IOException ex)
                 {
                     unlock = false;
-                    Debug.print(ex.Message);
+                    Debug.Log(ex.Message);
                 }
             }
             Files.Clear();

@@ -24,17 +24,19 @@ public class CardViewer : MonoBehaviour
         cardItem.transform.position=start;
         cardItem.transform.localScale = new Vector3(Scale, Scale);
     }
-    public void ShowCard()
+    public void ShowCard(int CardIndex)
     {
-        if (cm != null & card != null)
+        if (cm != null)
         {
-            cm.GUID = card.GUID;
-            cm.Index = card.CardIndex;
-            cm.SetSprite(card.CardIndex);
+            cm.SetSprite(CardIndex);
             spriteRenderer.sortingOrder = 0;
             spriteRenderer.material.SetFloat("_OutlineEnabled",0);
             cardItem.transform.localScale = new Vector3(Scale, Scale);
             cm.CanDrag = false;
         }
+    }
+    public void Update()
+    {
+      
     }
 }
