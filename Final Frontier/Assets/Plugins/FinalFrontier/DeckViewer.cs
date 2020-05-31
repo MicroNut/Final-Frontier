@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class DeckViewer : MonoBehaviour
 {
+    private DeckViewer _dv;
+    private Deck _deck;
+
     public Vector3 start;
     public float Scale;
     public float cardXOffset;
@@ -15,6 +18,11 @@ public class DeckViewer : MonoBehaviour
     void Start()
     {
 
+    }
+
+    private void Awake()
+    {
+        _dv = gameObject.GetComponent<DeckViewer>();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -29,8 +37,8 @@ public class DeckViewer : MonoBehaviour
     {
         float cox = 0;
         float coy = 0;
-        Clear();
         Deck deck = Board.GetDeck(GUID);
+        Clear();
         for (int i = startIndex; i < startIndex + numberOfCards; i++)
         {
             cox += cardXOffset;
@@ -40,6 +48,7 @@ public class DeckViewer : MonoBehaviour
             CardModel cm = cardItem.GetComponent<CardModel>();
             if (cm != null & i < deck.Cards.Count)
             {
+                cardItem.name = deck.Cards[i].GUID;
                 cm.GUID = deck.Cards[i].GUID;
                 cm.DeckName = gameObject.name;
                 
@@ -58,17 +67,40 @@ public class DeckViewer : MonoBehaviour
                 spriteRenderer.material.SetFloat("_OutlineEnabled", 0);
                 cardItem.transform.localScale = new Vector3(Scale, Scale);
                 //ViewStack.Add(cardItem);
-                cardItem.transform.SetParent(gameObject.transform);
+                //cardItem.transform.SetParent(gameObject.transform);
             }
         }
     }
 
+    public void Clear(Deck d)
+    {
+        //while (gameObject.transform.childCount>0)
+        //{ 
+        //    Destroy(gameObject.transform.GetChild(0).gameObject);
+        //}
+        if (d == null)
+            return;
+        foreach (Card c in d.Cards)
+        {
+            Destroy(GameObject.Find(c.GUID));
+        }
+
+    }
+
     public void Clear()
     {
-        foreach(Transform child in gameObject.transform)
+        //while (gameObject.transform.childCount>0)
+        //{ 
+        //    Destroy(gameObject.transform.GetChild(0).gameObject);
+        //}
+        Deck d = Board.GetDeck(GUID);
+        if (d == null)
+            return;
+        foreach (Card c in d.Cards)
         {
-            Destroy(child.gameObject);
+            Destroy(GameObject.Find(c.GUID));
         }
+
     }
 
     // Update is called once per frame

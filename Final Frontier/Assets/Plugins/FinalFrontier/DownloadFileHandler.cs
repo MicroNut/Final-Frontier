@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
+using System;
 
 public class DownloadFileHandler : MonoBehaviour
 {
@@ -13,41 +14,45 @@ public class DownloadFileHandler : MonoBehaviour
     private bool success;
     private string error;
 
-    IEnumerator DownloadFile(string URL, string FilePath)
+    IEnumerator DownloadFile(string URL, string FilePath, Action<UnityWebRequest> callback)
     {
         var uwr = new UnityWebRequest(URL, UnityWebRequest.kHttpVerbGET);
         uwr.downloadHandler = new DownloadHandlerFile(Path.Combine(Global.Root, FilePath));
         yield return uwr.SendWebRequest();
-        
-        if (uwr.isNetworkError || uwr.isHttpError)
-        {
-            success = false;
-            error = uwr.error;
-        }
-        else
-        {
-            Debug.Log("File successfully downloaded and saved to " + Path.Combine(Global.Root, FilePath));
-        }
+        callback(uwr);
     }
 
     public bool GetFileFromURL(string URL, string FilePath)
     {
-        error = "";
+        bool rslt = true;
         if (!File.Exists(FilePath))
         {
-
-            StartCoroutine(DownloadFile(URL, FilePath));
-            return success;
+            StartCoroutine(DownloadFile(URL, FilePath, (UnityWebRequest req) =>
+            {
+                if (req.isNetworkError || req.isHttpError)
+                {
+                    Debug.Log($"{req.error}: {req.downloadHandler.text}");
+                    rslt = false;
+                }
+                else
+                {
+                    while (!req.downloadHandler.isDone) { }
+                    rslt = true;
+                }
+            }));
         }
         else
-        {
-            return true;
-        }
+            rslt = true;
+        return rslt;
     }
 
     public bool GetFileFromURL(int CardIndex)
     {
-        string image = CardBase.FieldValue(CardBase.CardCollection[CardIndex], "ImageFile");
+        string image;
+        if (CardIndex == -1)
+            image = "cardback";
+        else
+            image = CardBase.FieldValue(CardBase.CardCollection[CardIndex], "ImageFile");
         string url = Global.CardGeneralURLs + @"/" + image + ".jpg";
         string path = Global.ImageDir + @"\" + image + ".jpg";
         return GetFileFromURL(url, path);

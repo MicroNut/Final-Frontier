@@ -18,8 +18,8 @@ public class CardViewer : MonoBehaviour
         cardItem = GameObject.Find("Card");
         spriteRenderer = cardItem.GetComponent<SpriteRenderer>();
         cm = cardItem.GetComponent<CardModel>();
-        string filePath = Global.ImageDir + @"\cardback.jpg";
-        spriteRenderer.sprite = cm.LoadNewSprite(filePath);
+        //string filePath = Global.ImageDir + @"\cardback.jpg";
+        spriteRenderer.sprite = cm.LoadNewSprite(-1);
         spriteRenderer.sortingLayerName = "Default";
         cardItem.transform.position=start;
         cardItem.transform.localScale = new Vector3(Scale, Scale);

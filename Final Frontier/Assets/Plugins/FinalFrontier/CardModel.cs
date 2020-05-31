@@ -148,6 +148,7 @@ public class CardModel : MonoBehaviour
         CardModel cm = gameObject.GetComponent<CardModel>();
         switch (cm.DeckName)
         {
+
             default:
                 _cardRender.sortingLayerName = "Play";
                 Global.Drag = true;
@@ -192,6 +193,11 @@ public class CardModel : MonoBehaviour
         {
             switch(DeckName)
             {
+                //case "Hand":
+                //    DeckViewer hDV = _goHand.GetComponent<DeckViewer>();
+                //    hDV.Clear();
+                //    break;
+
                 case "Draw":
                     Card cardmoved = Board.GetCard(_cardModel.GUID);
                     Vector3 offset = _handViewer.FreeSlot();
@@ -202,6 +208,11 @@ public class CardModel : MonoBehaviour
                     _cardRender.transform.position = offset + new Vector3(midx, midy);
                     Board.SwapCard(cardmoved, _goHand.GetComponent<DeckViewer>().GUID);
                     FlipFace(_handViewer.Scale);
+                    _cardModel.DeckName = "Hand";
+                    _cardRender.sortingLayerName = "Default";
+                    _gocv.GetComponent<CardViewer>().ShowCard(_cardModel.Index);
+                    //_cardRender.transform.SetParent(_goHand.transform);
+                    //_cardRender.transform.localScale = new Vector3(_handViewer.Scale, _handViewer.Scale, _handViewer.Scale);
                     break;
             }
         }
@@ -230,26 +241,22 @@ public class CardModel : MonoBehaviour
     public void ToggleFace(bool showFace)
     {
         Card card = Board.GetCard(GUID);
-        SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
         if (showFace)
         {
-            string imagename = CardBase.FieldValue(CardBase.CardCollection[Index], "ImageFile");
-            
-            sr.sprite = LoadNewSprite(Global.ImageDir+ @"\" + imagename+ ".jpg") ;
+            _cardRender.sprite = LoadNewSprite(_cardModel.Index) ;
             Flipped = false;
         }
         else
         {
-            sr.sprite = LoadNewSprite(Global.ImageDir + @"\cardback.jpg");
+            _cardRender.sprite = LoadNewSprite(-1);
             Flipped = true;
         }
     }
 
     public void FlipFace(float Scale)
     {
-        string imagename = CardBase.FieldValue(CardBase.CardCollection[Index], "ImageFile");
-        Sprite image = LoadNewSprite(Global.ImageDir + @"\" + imagename + ".jpg");
-        Sprite back = LoadNewSprite(Global.ImageDir + @"\cardback.jpg");
+        Sprite image = LoadNewSprite(_cardModel.Index);
+        Sprite back = LoadNewSprite(-1);
         CardFlipper fp = gameObject.GetComponent<CardFlipper>();
         fp.transform.localScale = gameObject.transform.localScale;
         if (Flipped)
@@ -266,23 +273,7 @@ public class CardModel : MonoBehaviour
 
     public void SetSprite(int CardIndex)
     {
-        string ImageFile;
-        if (CardIndex == -1)
-        {
-            ImageFile = "cardback";
-        }
-        else
-        {
-            string[] card = CardBase.CardCollection[CardIndex];
-            ImageFile = CardBase.FieldValue(card, Global.ImageHeader);
-        }
-        string filePath = Global.ImageDir + @"\" + ImageFile + ".jpg";
-        string ImageURL = Global.CardGeneralURLs + ImageFile + ".jpg";
-        if (!File.Exists(filePath))
-        {
-            LoadFromURL(ImageURL, filePath);
-        }
-        _cardRender.sprite = LoadNewSprite(filePath);
+        _cardRender.sprite = LoadNewSprite(CardIndex);
         _box.size = new Vector3(_cardRender.sprite.bounds.size.x / transform.lossyScale.x,
                                      _cardRender.sprite.bounds.size.y / transform.lossyScale.y,
                                      _cardRender.sprite.bounds.size.z / transform.lossyScale.z); ;
@@ -295,63 +286,77 @@ public class CardModel : MonoBehaviour
             return true;
         GameObject goFH = GameObject.Find("FileHandler");
         DownloadFileHandler dfh = goFH.GetComponent<DownloadFileHandler>();
-        if (dfh.GetFileFromURL(URL, Path))
+        dfh.GetFileFromURL(URL, Path);
+        FileStream fs;
+        bool unlock = false;
+        while (!unlock)
         {
-            FileStream fs;
-            bool unlock = false;
-            while (!unlock)
+            try
             {
-                try
-                {
-                    fs = File.Open(Path, FileMode.Open);
-                    unlock = true;
-                    fs.Close();
-                }
-                catch (IOException ex)
-                {
-                    Debug.Log(ex.Message);
-                    unlock = true;
-                }
+                fs = File.Open(Path, FileMode.Open);
+                unlock = true;
+                fs.Close();
             }
-            return true;
+            catch (IOException ex)
+            {
+                Debug.Log(ex.Message);
+                unlock = true;
+            }
         }
-        return false;
+        return true;
     }
-    
-    public Sprite LoadNewSprite(string FilePath, float PixelsPerUnit = 100.0f, SpriteMeshType spriteType = SpriteMeshType.Tight)
+    public Sprite LoadNewSprite(int cardIndex, float PixelsPerUnit = 100.0f, SpriteMeshType spriteType = SpriteMeshType.Tight)
     {
         FileStream fs;
-        // Load a PNG or JPG image from disk to a Texture2D, assign this texture to a new sprite and return its reference
+        string[] card;
+        string ImageFile;
+        string filePath;
+
         bool unlock = false;
-        if (File.Exists(FilePath))
+        if (cardIndex != -1)
         {
-            while (!unlock)
-            {
-                try
-                {
-                    fs = File.Open(FilePath, FileMode.Open);
-                    unlock = true;
-                    fs.Close();
-                }
-                catch (IOException ex)
-                {
-                    unlock = false;
-                    Debug.Log(ex.Message);
-                }
-            }
-            Texture2D SpriteTexture = LoadTexture(FilePath);
-            Sprite NewSprite = Sprite.Create(SpriteTexture, new Rect(0, 0, SpriteTexture.width, SpriteTexture.height), new Vector2(0.5f, 0.5f), PixelsPerUnit, 0, spriteType);
-            return NewSprite;
+            card = CardBase.CardCollection[cardIndex];
+            ImageFile = CardBase.FieldValue(card, Global.ImageHeader);
         }
         else
         {
-            string cardURL = Global.CardGeneralURLs + Path.GetFileName(FilePath);
-            if (!LoadFromURL(cardURL, FilePath))
-                FilePath = Global.ImageDir + @"\CardMissing.jpg";
-            return LoadNewSprite(FilePath);
+            ImageFile = "cardback";
         }
-    }
+        filePath = Global.ImageDir + @"\" + ImageFile + ".jpg";
+        if (_fh.GetFileFromURL(cardIndex))
+        {
+            if (File.Exists(filePath))
+            {
+                while (!unlock)
+                {
+                    try
+                    {
+                        fs = File.Open(filePath, FileMode.Open);
+                        unlock = true;
+                        fs.Close();
+                    }
+                    catch (IOException ex)
+                    {
+                        unlock = false;
+                        Debug.Log(ex.Message);
+                    }
+                }
+            }
+            else
+            {
+                filePath = Global.ImageDir + @"\CardMissing.jpg";
+            }
 
+        }
+        else
+        {
+            filePath = Global.ImageDir + @"\CardMissing.jpg";
+        }
+        Texture2D SpriteTexture = LoadTexture(filePath);
+        Sprite NewSprite = Sprite.Create(SpriteTexture, new Rect(0, 0, SpriteTexture.width, SpriteTexture.height), new Vector2(0.5f, 0.5f), PixelsPerUnit, 0, spriteType);
+        return NewSprite;
+    }
+   
     private static Sprite ConvertTextureToSprite(Texture2D texture, float PixelsPerUnit = 100.0f, SpriteMeshType spriteType = SpriteMeshType.Tight)
     {
         // Converts a Texture2D to a sprite, assign this texture to a new sprite and return its reference

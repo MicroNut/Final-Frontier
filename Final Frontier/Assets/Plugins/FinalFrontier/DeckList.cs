@@ -30,7 +30,7 @@ public class DeckList
     private void LoadLackeyDecks(string DeckFile)
     {
         //this.Decks = new List<Deck>();
-        //DownloadFileHandler fh = GameObject.Find("FileHandler").GetComponent<DownloadFileHandler>();
+        DownloadFileHandler fh = GameObject.Find("FileHandler").GetComponent<DownloadFileHandler>();
         Deck item = GetDeck(DeckEnum.Draw);
         item.GUID = System.Guid.NewGuid().ToString();
         item.Cards.Clear();
@@ -53,7 +53,7 @@ public class DeckList
                     {
                         int qty = System.Int32.Parse(data[0]);
                         int cardIndex = CardBase.GetIndex(data[1]);
-                        //fh.GetFileFromURL(cardIndex);
+                        fh.GetFileFromURL(cardIndex);
                         Card card = new Card();
                         card.ParentGUID = item.GUID;
                         card.Active = true;
@@ -80,6 +80,8 @@ public class DeckList
     {
         //this.Decks = new List<Deck>();
         Deck item = new Deck();
+        DownloadFileHandler fh = GameObject.Find("FileHandler").GetComponent<DownloadFileHandler>();
+
         item.GUID = System.Guid.NewGuid().ToString();
         string deckType;
 
@@ -95,6 +97,7 @@ public class DeckList
             card.ParentGUID = item.GUID;
             card.Active = true;
             card.CardIndex = cardIndex;
+            fh.GetFileFromURL(cardIndex);
             card.PlayerIndex = Global.CurrentPlayer;
             switch (deckType)
             {

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5951123520743524885}
   - component: {fileID: 5951123520743524880}
   - component: {fileID: 331853019857612928}
-  - component: {fileID: 8103775607462139328}
+  - component: {fileID: -6370585320359846518}
   m_Layer: 0
   m_Name: Card
   m_TagString: Untagged
@@ -102,7 +102,6 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   duration: 0.5
-  cardScale: 1
   cardIndex: 0
 --- !u!212 &5951123520743524880
 SpriteRenderer:
@@ -122,7 +121,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: a12396b1842db4748b1ba2aac0c1af1a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -180,7 +179,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!50 &8103775607462139328
+--- !u!50 &-6370585320359846518
 Rigidbody2D:
   serializedVersion: 4
   m_ObjectHideFlags: 0
